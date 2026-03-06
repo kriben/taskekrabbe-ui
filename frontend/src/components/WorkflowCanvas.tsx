@@ -79,7 +79,7 @@ export function WorkflowCanvas() {
         edgeTypes={edgeTypes}
         fitView
         colorMode="dark"
-        defaultEdgeOptions={{ animated: true }}
+        defaultEdgeOptions={{ animated: false }}
       >
         <Background gap={20} size={1} color="#333" />
         <Controls />

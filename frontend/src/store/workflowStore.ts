@@ -106,7 +106,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
           ...connection,
           id: `edge_${connection.source}_${connection.target}_${Date.now()}`,
           type: 'default',
-          animated: true,
+          animated: false,
         },
         state.edges,
       ),
@@ -263,7 +263,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
             target: targetId,
             sourceHandle: 'output',
             targetHandle: 'input',
-            animated: true,
+            animated: false,
           });
         }
       } else if (Array.isArray(deps) && deps.length === 2) {
@@ -275,7 +275,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
             target: targetId,
             sourceHandle: deps[1],
             targetHandle: 'input',
-            animated: true,
+            animated: false,
           });
         }
       } else if (typeof deps === 'object' && !Array.isArray(deps)) {
@@ -289,7 +289,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
                 target: targetId,
                 sourceHandle: 'output',
                 targetHandle: field,
-                animated: true,
+                animated: false,
               });
             }
           } else if (Array.isArray(ref) && ref.length === 2) {
@@ -301,7 +301,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
                 target: targetId,
                 sourceHandle: ref[1],
                 targetHandle: field,
-                animated: true,
+                animated: false,
               });
             }
           }
