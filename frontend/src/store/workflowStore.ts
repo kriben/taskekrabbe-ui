@@ -257,12 +257,26 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
       if (typeof deps === 'string') {
         const sourceId = nameToNodeId[deps];
         if (sourceId) {
+          // If the target has multiple input fields, find the matching field
+          // by looking for a field whose type matches the source output type
+          let targetHandle = 'input';
+          if (taskInfo.input_fields.length > 1) {
+            const sourceNode = newNodes.find((n) => n.id === sourceId);
+            if (sourceNode) {
+              const sourceData = sourceNode.data as TaskNodeData;
+              const sourceOutputType = sourceData.taskInfo.output_type_name;
+              const match = taskInfo.input_fields.find((f) => f.type_name === sourceOutputType);
+              if (match) {
+                targetHandle = match.name;
+              }
+            }
+          }
           newEdges.push({
             id: `edge_${sourceId}_${targetId}`,
             source: sourceId,
             target: targetId,
             sourceHandle: 'output',
-            targetHandle: 'input',
+            targetHandle,
             animated: false,
           });
         }
