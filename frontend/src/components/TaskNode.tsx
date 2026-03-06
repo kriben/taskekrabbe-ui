@@ -18,32 +18,6 @@ export const TaskNode = memo(function TaskNode({ data, selected }: NodeProps) {
         boxShadow: selected ? '0 0 12px rgba(74,158,255,0.3)' : '0 2px 8px rgba(0,0,0,0.3)',
       }}
     >
-      {/* Input handles */}
-      {taskInfo.input_fields.length <= 1 ? (
-        <Handle
-          type="target"
-          position={Position.Left}
-          id="input"
-          style={{ background: '#4a9eff', width: 10, height: 10 }}
-        />
-      ) : (
-        taskInfo.input_fields.map((field, i) => (
-          <Handle
-            key={field.name}
-            type="target"
-            position={Position.Left}
-            id={field.name}
-            style={{
-              background: '#4a9eff',
-              width: 8,
-              height: 8,
-              top: `${28 + i * 16}px`,
-            }}
-            title={`${field.name}: ${field.type_name}`}
-          />
-        ))
-      )}
-
       {/* Header */}
       <div
         style={{
@@ -64,53 +38,87 @@ export const TaskNode = memo(function TaskNode({ data, selected }: NodeProps) {
           <div style={{ fontSize: 9, color: '#888', textTransform: 'uppercase' }}>In</div>
           {taskInfo.input_fields.length > 1 ? (
             taskInfo.input_fields.map((f) => (
-              <div key={f.name} style={{ fontSize: 11 }}>
+              <div key={f.name} style={{ position: 'relative', fontSize: 11 }}>
+                <Handle
+                  type="target"
+                  position={Position.Left}
+                  id={f.name}
+                  style={{
+                    background: '#4a9eff',
+                    width: 8,
+                    height: 8,
+                    left: -16,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                  }}
+                  title={`${f.name}: ${f.type_name}`}
+                />
                 {f.name}: <span style={{ color: '#acd' }}>{f.type_name}</span>
               </div>
             ))
           ) : (
-            taskInfo.input_type_name
+            <div style={{ position: 'relative' }}>
+              <Handle
+                type="target"
+                position={Position.Left}
+                id="input"
+                style={{
+                  background: '#4a9eff',
+                  width: 10,
+                  height: 10,
+                  left: -16,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                }}
+              />
+              {taskInfo.input_type_name}
+            </div>
           )}
         </div>
         <div style={{ color: '#bc8', textAlign: 'right' }}>
           <div style={{ fontSize: 9, color: '#888', textTransform: 'uppercase' }}>Out</div>
           {taskInfo.output_type_name === 'Outputs' ? (
             taskInfo.output_fields.map((f) => (
-              <div key={f.name} style={{ fontSize: 11 }}>
+              <div key={f.name} style={{ position: 'relative', fontSize: 11 }}>
+                <Handle
+                  type="source"
+                  position={Position.Right}
+                  id={f.name}
+                  style={{
+                    background: '#ff9e4a',
+                    width: 8,
+                    height: 8,
+                    right: -16,
+                    left: 'auto',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                  }}
+                  title={`${f.name}: ${f.type_name}`}
+                />
                 {f.name}: <span style={{ color: '#dca' }}>{f.type_name}</span>
               </div>
             ))
           ) : (
-            taskInfo.output_type_name
+            <div style={{ position: 'relative' }}>
+              <Handle
+                type="source"
+                position={Position.Right}
+                id="output"
+                style={{
+                  background: '#ff9e4a',
+                  width: 10,
+                  height: 10,
+                  right: -16,
+                  left: 'auto',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                }}
+              />
+              {taskInfo.output_type_name}
+            </div>
           )}
         </div>
       </div>
-
-      {/* Output handles */}
-      {taskInfo.output_type_name !== 'Outputs' ? (
-        <Handle
-          type="source"
-          position={Position.Right}
-          id="output"
-          style={{ background: '#ff9e4a', width: 10, height: 10 }}
-        />
-      ) : (
-        taskInfo.output_fields.map((field, i) => (
-          <Handle
-            key={field.name}
-            type="source"
-            position={Position.Right}
-            id={field.name}
-            style={{
-              background: '#ff9e4a',
-              width: 8,
-              height: 8,
-              top: `${28 + i * 16}px`,
-            }}
-            title={`${field.name}: ${field.type_name}`}
-          />
-        ))
-      )}
     </div>
   );
 });
