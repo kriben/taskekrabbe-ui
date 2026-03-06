@@ -1,0 +1,15 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "taskekrabbe-ui-backend"
+version = "0.1.0"
+description = "Backend for Taskekrabbe workflow configuration editor"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.135.1",
+    "uvicorn[standard]>=0.41.0",
+    "pyyaml>=6.0.3,<7.0",
+    "taskekrabbe @ file:///${PROJECT_ROOT}/../../taskekrabbe",
+]
