@@ -19,7 +19,7 @@ export const TaskNode = memo(function TaskNode({ data, selected }: NodeProps) {
       }}
     >
       {/* Input handles */}
-      {taskInfo.input_type_name !== 'Inputs' ? (
+      {taskInfo.input_fields.length <= 1 ? (
         <Handle
           type="target"
           position={Position.Left}
@@ -62,7 +62,7 @@ export const TaskNode = memo(function TaskNode({ data, selected }: NodeProps) {
       <div style={{ padding: '6px 12px', display: 'flex', justifyContent: 'space-between', gap: 12 }}>
         <div style={{ color: '#8bc' }}>
           <div style={{ fontSize: 9, color: '#888', textTransform: 'uppercase' }}>In</div>
-          {taskInfo.input_type_name === 'Inputs' ? (
+          {taskInfo.input_fields.length > 1 ? (
             taskInfo.input_fields.map((f) => (
               <div key={f.name} style={{ fontSize: 11 }}>
                 {f.name}: <span style={{ color: '#acd' }}>{f.type_name}</span>
