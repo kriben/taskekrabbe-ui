@@ -136,6 +136,7 @@ def scan_directory(directory: Path) -> ScanResponse:
 
     try:
         # Walk .py files
+        imported_modules: list[str] = []
         for py_file in sorted(directory.rglob("*.py")):
             if py_file.name.startswith("_"):
                 continue
@@ -144,7 +145,11 @@ def scan_directory(directory: Path) -> ScanResponse:
             module_name = str(rel.with_suffix("")).replace("/", ".").replace("\\", ".")
 
             try:
+                # Evict cached module so we always import from the target directory
+                if module_name in sys.modules:
+                    del sys.modules[module_name]
                 module = importlib.import_module(module_name)
+                imported_modules.append(module_name)
             except Exception:
                 continue
 
@@ -221,6 +226,9 @@ def scan_directory(directory: Path) -> ScanResponse:
                 continue
 
     finally:
+        # Clean up imported modules to avoid polluting future scans
+        for mod_name in imported_modules:
+            sys.modules.pop(mod_name, None)
         if added_to_path:
             sys.path.remove(str(directory))
         if added_parent and parent in sys.path:
