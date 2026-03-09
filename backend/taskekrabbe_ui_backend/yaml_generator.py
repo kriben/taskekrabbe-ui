@@ -16,6 +16,8 @@ def generate_yaml(workflow_def: WorkflowDef) -> str:
             entry["name"] = node.instance_name
         if node.depends_on is not None:
             entry["depends_on"] = node.depends_on
+        if node.config_fields:
+            entry["config_fields"] = node.config_fields
         tasks_section.append(entry)
 
     config = {
