@@ -7,20 +7,25 @@ import {
   type NodeTypes,
   type EdgeTypes,
   type Connection,
+  type Edge,
   type Node,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useWorkflowStore } from '../store/workflowStore';
 import { TaskNode } from './TaskNode';
+import { ConfigNode } from './ConfigNode';
 import { ConnectionLine } from './ConnectionLine';
+import { ConfigEdge } from './ConfigEdge';
 import type { TaskInfo, TaskNodeData } from '../types';
 
 const nodeTypes: NodeTypes = {
   taskNode: TaskNode,
+  configNode: ConfigNode,
 };
 
 const edgeTypes: EdgeTypes = {
   default: ConnectionLine,
+  configEdge: ConfigEdge,
 };
 
 /** Get the type_name for a handle on a node. */
@@ -86,10 +91,13 @@ export function WorkflowCanvas() {
   }, [setSelectedNode]);
 
   const isValidConnection = useCallback(
-    (connection: Connection) => {
+    (connection: Edge | Connection) => {
       const sourceNode = nodes.find((n) => n.id === connection.source);
       const targetNode = nodes.find((n) => n.id === connection.target);
       if (!sourceNode || !targetNode) return false;
+
+      // Config nodes skip type validation
+      if (sourceNode.type === 'configNode') return true;
 
       const sourceType = getHandleType(sourceNode as Node<TaskNodeData>, connection.sourceHandle ?? null, 'source');
       const targetType = getHandleType(targetNode as Node<TaskNodeData>, connection.targetHandle ?? null, 'target');
@@ -124,7 +132,7 @@ export function WorkflowCanvas() {
         <Controls />
         <MiniMap
           style={{ background: '#1a1a2e' }}
-          nodeColor="#4a9eff"
+          nodeColor={(node) => (node.type === 'configNode' ? '#66d9a0' : '#4a9eff')}
           maskColor="rgba(0,0,0,0.5)"
         />
       </ReactFlow>

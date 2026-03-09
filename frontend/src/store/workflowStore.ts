@@ -10,7 +10,7 @@ import {
   type NodeChange,
   type EdgeChange,
 } from '@xyflow/react';
-import type { TaskInfo, ExistingWorkflow, TaskNodeData, WorkflowDef, WorkflowNodeDef } from '../types';
+import type { TaskInfo, ExistingWorkflow, TaskNodeData, ConfigNodeData, WorkflowDef, WorkflowNodeDef } from '../types';
 import * as api from '../api/client';
 
 interface WorkflowStore {
@@ -20,7 +20,7 @@ interface WorkflowStore {
   existingWorkflows: ExistingWorkflow[];
 
   // Graph state
-  nodes: Node<TaskNodeData>[];
+  nodes: Node[];
   edges: Edge[];
 
   // UI state
@@ -42,6 +42,7 @@ interface WorkflowStore {
   exportYaml: () => Promise<string>;
   loadExistingWorkflow: (wf: ExistingWorkflow) => void;
   deleteNode: (id: string) => void;
+  toggleConfigField: (taskNodeId: string, fieldName: string) => void;
   buildWorkflowDef: () => WorkflowDef;
   clearWorkflow: () => void;
 }
@@ -78,18 +79,18 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
 
   addTaskNode: (task: TaskInfo, position: XYPosition) => {
     const id = `node_${++nodeIdCounter}`;
-    const newNode: Node<TaskNodeData> = {
+    const newNode: Node = {
       id,
       type: 'taskNode',
       position,
-      data: { taskInfo: task, instanceName: null },
+      data: { taskInfo: task, instanceName: null } satisfies TaskNodeData,
     };
     set((state) => ({ nodes: [...state.nodes, newNode] }));
   },
 
   onNodesChange: (changes: NodeChange[]) => {
     set((state) => ({
-      nodes: applyNodeChanges(changes, state.nodes) as Node<TaskNodeData>[],
+      nodes: applyNodeChanges(changes, state.nodes),
     }));
   },
 
@@ -142,12 +143,126 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
     }
   },
 
+  toggleConfigField: (taskNodeId: string, fieldName: string) => {
+    const { nodes, edges } = get();
+
+    const taskNode = nodes.find((n) => n.id === taskNodeId && n.type === 'taskNode');
+    if (!taskNode) return;
+    const taskData = taskNode.data as TaskNodeData;
+    const fieldInfo = taskData.taskInfo.input_fields.find((f) => f.name === fieldName);
+    if (!fieldInfo) return;
+
+    // Find existing config node for this task
+    const existingConfigNode = nodes.find(
+      (n) => n.type === 'configNode' && (n.data as ConfigNodeData).targetTaskNodeId === taskNodeId,
+    );
+
+    if (existingConfigNode) {
+      const configData = existingConfigNode.data as ConfigNodeData;
+      const hasField = configData.fields.some((f) => f.name === fieldName);
+
+      if (hasField) {
+        // Remove the field
+        const newFields = configData.fields.filter((f) => f.name !== fieldName);
+        const configEdgeId = `cfgedge_${existingConfigNode.id}_${taskNodeId}_${fieldName}`;
+        const newEdges = edges.filter((e) => e.id !== configEdgeId);
+
+        if (newFields.length === 0) {
+          // Remove config node entirely
+          set({
+            nodes: nodes.filter((n) => n.id !== existingConfigNode.id),
+            edges: newEdges,
+          });
+        } else {
+          // Update config node fields
+          set({
+            nodes: nodes.map((n) =>
+              n.id === existingConfigNode.id
+                ? { ...n, data: { ...configData, fields: newFields } }
+                : n,
+            ),
+            edges: newEdges,
+          });
+        }
+      } else {
+        // Add the field
+        const newFields = [...configData.fields, { name: fieldInfo.name, type_name: fieldInfo.type_name }];
+        const targetHandle = taskData.taskInfo.input_fields.length > 1 ? fieldName : 'input';
+        const newEdge: Edge = {
+          id: `cfgedge_${existingConfigNode.id}_${taskNodeId}_${fieldName}`,
+          source: existingConfigNode.id,
+          target: taskNodeId,
+          sourceHandle: fieldName,
+          targetHandle,
+          type: 'configEdge',
+          animated: false,
+        };
+
+        set({
+          nodes: nodes.map((n) =>
+            n.id === existingConfigNode.id
+              ? { ...n, data: { ...configData, fields: newFields } }
+              : n,
+          ),
+          edges: [...edges, newEdge],
+        });
+      }
+    } else {
+      // Create new config node
+      const configNodeId = `config_${++nodeIdCounter}`;
+      const configNode: Node = {
+        id: configNodeId,
+        type: 'configNode',
+        position: { x: taskNode.position.x - 200, y: taskNode.position.y - 50 },
+        data: {
+          targetTaskNodeId: taskNodeId,
+          fields: [{ name: fieldInfo.name, type_name: fieldInfo.type_name }],
+        } satisfies ConfigNodeData,
+      };
+      const targetHandle = taskData.taskInfo.input_fields.length > 1 ? fieldName : 'input';
+      const configEdge: Edge = {
+        id: `cfgedge_${configNodeId}_${taskNodeId}_${fieldName}`,
+        source: configNodeId,
+        target: taskNodeId,
+        sourceHandle: fieldName,
+        targetHandle,
+        type: 'configEdge',
+        animated: false,
+      };
+
+      set({
+        nodes: [...nodes, configNode],
+        edges: [...edges, configEdge],
+      });
+    }
+  },
+
   buildWorkflowDef: (): WorkflowDef => {
     const { nodes, edges, workflowName } = get();
 
-    // Build dependency map: target node -> list of source edges
-    const incomingEdges: Record<string, Edge[]> = {};
+    // Separate config nodes from task nodes
+    const taskNodes = nodes.filter((n) => n.type !== 'configNode');
+    const configNodeIds = new Set(nodes.filter((n) => n.type === 'configNode').map((n) => n.id));
+
+    // Build config fields map: taskNodeId -> field names from config edges
+    const configFieldsMap: Record<string, string[]> = {};
     for (const edge of edges) {
+      if (edge.type === 'configEdge' && configNodeIds.has(edge.source)) {
+        if (!configFieldsMap[edge.target]) {
+          configFieldsMap[edge.target] = [];
+        }
+        if (edge.sourceHandle) {
+          configFieldsMap[edge.target].push(edge.sourceHandle);
+        }
+      }
+    }
+
+    // Filter out config edges for dependency building
+    const dataEdges = edges.filter((e) => e.type !== 'configEdge' && !configNodeIds.has(e.source));
+
+    // Build dependency map: target node -> list of source data edges
+    const incomingEdges: Record<string, Edge[]> = {};
+    for (const edge of dataEdges) {
       if (!incomingEdges[edge.target]) {
         incomingEdges[edge.target] = [];
       }
@@ -156,13 +271,13 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
 
     // Map node IDs to task names
     const nodeNameMap: Record<string, string> = {};
-    for (const node of nodes) {
+    for (const node of taskNodes) {
       const data = node.data as TaskNodeData;
       nodeNameMap[node.id] = data.instanceName || data.taskInfo.name;
     }
 
     const tasks: WorkflowNodeDef[] = [];
-    for (const node of nodes) {
+    for (const node of taskNodes) {
       const data = node.data as TaskNodeData;
       const incoming = incomingEdges[node.id] || [];
 
@@ -192,17 +307,19 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
         depends_on = fanIn;
       }
 
+      const config_fields = configFieldsMap[node.id] ?? null;
+
       tasks.push({
         task_import_path: data.taskInfo.import_path,
         instance_name: data.instanceName,
         depends_on,
-        config_fields: null,
+        config_fields,
       });
     }
 
-    // Result task: last node with no outgoing edges
-    const sourcesWithOutgoing = new Set(edges.map((e) => e.source));
-    const sinks = nodes.filter((n) => !sourcesWithOutgoing.has(n.id));
+    // Result task: last task node with no outgoing data edges
+    const sourcesWithOutgoing = new Set(dataEdges.map((e) => e.source));
+    const sinks = taskNodes.filter((n) => !sourcesWithOutgoing.has(n.id));
     const result_task = sinks.length === 1 ? nodeNameMap[sinks[0].id] : null;
 
     return { name: workflowName, tasks, result_task };
@@ -210,7 +327,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
 
   loadExistingWorkflow: (wf: ExistingWorkflow) => {
     const { availableTasks } = get();
-    const newNodes: Node<TaskNodeData>[] = [];
+    const newNodes: Node[] = [];
     const newEdges: Edge[] = [];
     const nameToNodeId: Record<string, string> = {};
 
@@ -235,7 +352,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
         id,
         type: 'taskNode',
         position: { x: 100 + (i % 3) * 300, y: 50 + Math.floor(i / 3) * 200 },
-        data: { taskInfo, instanceName: taskDef.instance_name },
+        data: { taskInfo, instanceName: taskDef.instance_name } satisfies TaskNodeData,
       });
     });
 
@@ -323,6 +440,54 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
       }
     }
 
+    // Create config nodes for tasks that have config_fields
+    for (const taskDef of wf.tasks) {
+      const taskInfo = availableTasks.find(
+        (t) =>
+          t.import_path === taskDef.task_import_path ||
+          t.import_path.endsWith(`.${taskDef.task_import_path.split('.').pop()}`)
+      );
+      if (!taskInfo) continue;
+      if (!taskDef.config_fields || taskDef.config_fields.length === 0) continue;
+
+      const taskName = taskDef.instance_name || taskInfo.name;
+      const taskNodeId = nameToNodeId[taskName];
+      if (!taskNodeId) continue;
+
+      const taskNode = newNodes.find((n) => n.id === taskNodeId);
+      if (!taskNode) continue;
+
+      const fields = taskDef.config_fields
+        .map((fieldName) => {
+          const field = taskInfo.input_fields.find((f) => f.name === fieldName);
+          return field ? { name: field.name, type_name: field.type_name } : null;
+        })
+        .filter((f): f is { name: string; type_name: string } => f !== null);
+
+      if (fields.length === 0) continue;
+
+      const configNodeId = `config_${++nodeIdCounter}`;
+      newNodes.push({
+        id: configNodeId,
+        type: 'configNode',
+        position: { x: taskNode.position.x - 200, y: taskNode.position.y - 50 },
+        data: { targetTaskNodeId: taskNodeId, fields } satisfies ConfigNodeData,
+      });
+
+      for (const field of fields) {
+        const targetHandle = taskInfo.input_fields.length > 1 ? field.name : 'input';
+        newEdges.push({
+          id: `cfgedge_${configNodeId}_${taskNodeId}_${field.name}`,
+          source: configNodeId,
+          target: taskNodeId,
+          sourceHandle: field.name,
+          targetHandle,
+          type: 'configEdge',
+          animated: false,
+        });
+      }
+    }
+
     set({
       nodes: newNodes,
       edges: newEdges,
@@ -334,11 +499,29 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
   },
 
   deleteNode: (id: string) => {
-    set((state) => ({
-      nodes: state.nodes.filter((n) => n.id !== id),
-      edges: state.edges.filter((e) => e.source !== id && e.target !== id),
-      selectedNodeId: state.selectedNodeId === id ? null : state.selectedNodeId,
-    }));
+    set((state) => {
+      const nodeToDelete = state.nodes.find((n) => n.id === id);
+
+      // If deleting a task node, also remove its associated config node
+      let configNodeIdToRemove: string | null = null;
+      if (nodeToDelete?.type === 'taskNode') {
+        const configNode = state.nodes.find(
+          (n) => n.type === 'configNode' && (n.data as ConfigNodeData).targetTaskNodeId === id,
+        );
+        if (configNode) {
+          configNodeIdToRemove = configNode.id;
+        }
+      }
+
+      const idsToRemove = new Set([id]);
+      if (configNodeIdToRemove) idsToRemove.add(configNodeIdToRemove);
+
+      return {
+        nodes: state.nodes.filter((n) => !idsToRemove.has(n.id)),
+        edges: state.edges.filter((e) => !idsToRemove.has(e.source) && !idsToRemove.has(e.target)),
+        selectedNodeId: state.selectedNodeId === id ? null : state.selectedNodeId,
+      };
+    });
   },
 
   clearWorkflow: () => {
