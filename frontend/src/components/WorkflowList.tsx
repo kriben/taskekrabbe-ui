@@ -6,7 +6,7 @@ export function WorkflowList() {
   if (existingWorkflows.length === 0) return null;
 
   return (
-    <div style={{ borderTop: '1px solid #e2e8f0', padding: 8 }}>
+    <div style={{ borderTop: '1px solid #e2e8f0', padding: 8, flexShrink: 0, maxHeight: '40%', overflow: 'auto' }}>
       <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 6 }}>
         Existing Workflows
       </div>

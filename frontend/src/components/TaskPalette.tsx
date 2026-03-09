@@ -18,7 +18,7 @@ export function TaskPalette() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       <div style={{ padding: 8, fontWeight: 700, fontSize: 14, borderBottom: '1px solid #e2e8f0' }}>
         Tasks ({availableTasks.length})
       </div>

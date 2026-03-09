@@ -90,7 +90,9 @@ export default function App() {
               background: '#ffffff',
             }}
           >
-            <TaskPalette />
+            <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+              <TaskPalette />
+            </div>
             <WorkflowList />
           </div>
 
