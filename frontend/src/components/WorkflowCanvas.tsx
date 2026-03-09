@@ -6,12 +6,14 @@ import {
   MiniMap,
   type NodeTypes,
   type EdgeTypes,
+  type Connection,
+  type Node,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useWorkflowStore } from '../store/workflowStore';
 import { TaskNode } from './TaskNode';
 import { ConnectionLine } from './ConnectionLine';
-import type { TaskInfo } from '../types';
+import type { TaskInfo, TaskNodeData } from '../types';
 
 const nodeTypes: NodeTypes = {
   taskNode: TaskNode,
@@ -20,6 +22,26 @@ const nodeTypes: NodeTypes = {
 const edgeTypes: EdgeTypes = {
   default: ConnectionLine,
 };
+
+/** Get the type_name for a handle on a node. */
+function getHandleType(node: Node<TaskNodeData>, handleId: string | null, side: 'source' | 'target'): string | null {
+  const taskData = node.data as unknown as TaskNodeData;
+  const { taskInfo } = taskData;
+
+  if (side === 'source') {
+    if (!handleId || handleId === 'output') {
+      return taskInfo.output_type_name;
+    }
+    const field = taskInfo.output_fields.find((f) => f.name === handleId);
+    return field?.type_name ?? null;
+  } else {
+    if (!handleId || handleId === 'input') {
+      return taskInfo.input_type_name;
+    }
+    const field = taskInfo.input_fields.find((f) => f.name === handleId);
+    return field?.type_name ?? null;
+  }
+}
 
 export function WorkflowCanvas() {
   const { nodes, edges, onNodesChange, onEdgesChange, onConnect, addTaskNode, setSelectedNode } =
@@ -63,6 +85,22 @@ export function WorkflowCanvas() {
     setSelectedNode(null);
   }, [setSelectedNode]);
 
+  const isValidConnection = useCallback(
+    (connection: Connection) => {
+      const sourceNode = nodes.find((n) => n.id === connection.source);
+      const targetNode = nodes.find((n) => n.id === connection.target);
+      if (!sourceNode || !targetNode) return false;
+
+      const sourceType = getHandleType(sourceNode as Node<TaskNodeData>, connection.sourceHandle ?? null, 'source');
+      const targetType = getHandleType(targetNode as Node<TaskNodeData>, connection.targetHandle ?? null, 'target');
+
+      if (!sourceType || !targetType) return false;
+
+      return sourceType === targetType;
+    },
+    [nodes]
+  );
+
   return (
     <div style={{ flex: 1, height: '100%' }}>
       <ReactFlow
@@ -75,6 +113,7 @@ export function WorkflowCanvas() {
         onDragOver={onDragOver}
         onNodeClick={onNodeClick}
         onPaneClick={onPaneClick}
+        isValidConnection={isValidConnection}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         fitView
