@@ -4,6 +4,7 @@ import {
   Background,
   Controls,
   MiniMap,
+  useReactFlow,
   type NodeTypes,
   type EdgeTypes,
   type Connection,
@@ -51,6 +52,7 @@ function getHandleType(node: Node<TaskNodeData>, handleId: string | null, side: 
 export function WorkflowCanvas() {
   const { nodes, edges, onNodesChange, onEdgesChange, onConnect, addTaskNode, setSelectedNode } =
     useWorkflowStore();
+  const { screenToFlowPosition } = useReactFlow();
 
   const onDragOver = useCallback((e: DragEvent) => {
     e.preventDefault();
@@ -65,14 +67,10 @@ export function WorkflowCanvas() {
 
       const task: TaskInfo = JSON.parse(data);
 
-      // Get position relative to the React Flow canvas
-      const bounds = (e.target as HTMLElement).closest('.react-flow')?.getBoundingClientRect();
-      if (!bounds) return;
-
-      const position = {
-        x: e.clientX - bounds.left,
-        y: e.clientY - bounds.top,
-      };
+      const position = screenToFlowPosition({
+        x: e.clientX,
+        y: e.clientY,
+      });
 
       addTaskNode(task, position);
     },
