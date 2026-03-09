@@ -12,6 +12,7 @@ import {
 } from '@xyflow/react';
 import type { TaskInfo, ExistingWorkflow, TaskNodeData, ConfigNodeData, WorkflowDef, WorkflowNodeDef } from '../types';
 import * as api from '../api/client';
+import { layoutNodes } from '../layout';
 
 interface WorkflowStore {
   // Data from backend
@@ -44,6 +45,7 @@ interface WorkflowStore {
   deleteNode: (id: string) => void;
   toggleConfigField: (taskNodeId: string, fieldName: string) => void;
   buildWorkflowDef: () => WorkflowDef;
+  autoLayout: () => void;
   clearWorkflow: () => void;
 }
 
@@ -351,7 +353,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
       newNodes.push({
         id,
         type: 'taskNode',
-        position: { x: 100 + (i % 3) * 300, y: 50 + Math.floor(i / 3) * 200 },
+        position: { x: 0, y: 0 }, // will be set by layoutNodes
         data: { taskInfo, instanceName: taskDef.instance_name } satisfies TaskNodeData,
       });
     });
@@ -489,7 +491,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
     }
 
     set({
-      nodes: newNodes,
+      nodes: layoutNodes(newNodes, newEdges),
       edges: newEdges,
       workflowName: wf.name,
       validationErrors: [],
@@ -522,6 +524,11 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
         selectedNodeId: state.selectedNodeId === id ? null : state.selectedNodeId,
       };
     });
+  },
+
+  autoLayout: () => {
+    const { nodes, edges } = get();
+    set({ nodes: layoutNodes(nodes, edges) });
   },
 
   clearWorkflow: () => {

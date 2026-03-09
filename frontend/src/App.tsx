@@ -20,6 +20,7 @@ export default function App() {
     workflowName,
     setWorkflowName,
     clearWorkflow,
+    autoLayout,
     nodes,
   } = useWorkflowStore();
   const [bottomTab, setBottomTab] = useState<BottomTab>('yaml');
@@ -191,6 +192,21 @@ export default function App() {
               }}
             >
               Export YAML
+            </button>
+            <button
+              onClick={autoLayout}
+              disabled={nodes.length === 0}
+              style={{
+                padding: '5px 14px',
+                background: nodes.length === 0 ? '#cbd5e1' : '#f1f5f9',
+                color: nodes.length === 0 ? '#94a3b8' : '#475569',
+                border: '1px solid #e2e8f0',
+                borderRadius: 4,
+                cursor: nodes.length === 0 ? 'default' : 'pointer',
+                fontSize: 12,
+              }}
+            >
+              Auto Layout
             </button>
             <button
               onClick={clearWorkflow}
