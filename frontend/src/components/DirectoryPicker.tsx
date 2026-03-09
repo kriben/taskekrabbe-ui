@@ -1,17 +1,18 @@
 import { useState } from 'react';
 import { useWorkflowStore } from '../store/workflowStore';
+import { useToastStore } from '../store/toastStore';
 
 export function DirectoryPicker() {
   const [directory, setDirectory] = useState('/workspace/taskekrabbe/examples/text_analysis');
-  const [error, setError] = useState<string | null>(null);
-  const { scanDirectory, isScanning, scannedDirectory } = useWorkflowStore();
+  const { scanDirectory, isScanning } = useWorkflowStore();
+  const addToast = useToastStore((s) => s.addToast);
 
   const handleScan = async () => {
-    setError(null);
     try {
       await scanDirectory(directory);
+      addToast('Directory scanned');
     } catch (e) {
-      setError(String(e));
+      addToast(String(e), 'error');
     }
   };
 
@@ -49,10 +50,6 @@ export function DirectoryPicker() {
       >
         {isScanning ? 'Scanning...' : 'Scan'}
       </button>
-      {scannedDirectory && !error && (
-        <span style={{ color: '#16a34a', fontSize: 13 }}>Scanned</span>
-      )}
-      {error && <span style={{ color: '#dc2626', fontSize: 13 }}>{error}</span>}
     </div>
   );
 }

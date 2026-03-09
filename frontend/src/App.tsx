@@ -7,6 +7,8 @@ import { WorkflowCanvas } from './components/WorkflowCanvas';
 import { TaskDetailPanel } from './components/TaskDetailPanel';
 import { WorkflowList } from './components/WorkflowList';
 import { YamlPreview } from './components/YamlPreview';
+import { ToastContainer } from './components/ToastContainer';
+import { useToastStore } from './store/toastStore';
 
 type BottomTab = 'yaml' | 'validation';
 
@@ -21,7 +23,7 @@ export default function App() {
     nodes,
   } = useWorkflowStore();
   const [bottomTab, setBottomTab] = useState<BottomTab>('yaml');
-  const [statusMsg, setStatusMsg] = useState('');
+  const addToast = useToastStore((s) => s.addToast);
   const [bottomHeight, setBottomHeight] = useState(200);
   const dragging = useRef(false);
   const startY = useRef(0);
@@ -51,16 +53,15 @@ export default function App() {
   const handleValidate = async () => {
     await validate();
     setBottomTab('validation');
-    setStatusMsg('');
   };
 
   const handleExport = async () => {
     try {
       await exportYaml();
       setBottomTab('yaml');
-      setStatusMsg('YAML generated');
+      addToast('YAML generated');
     } catch (e) {
-      setStatusMsg(`Export failed: ${e}`);
+      addToast(`Export failed: ${e}`, 'error');
     }
   };
 
@@ -205,9 +206,6 @@ export default function App() {
             >
               Clear
             </button>
-            {statusMsg && (
-              <span style={{ fontSize: 12, color: '#16a34a' }}>{statusMsg}</span>
-            )}
           </div>
 
           {/* Tab bar */}
@@ -254,6 +252,7 @@ export default function App() {
           </div>
         </div>
       </div>
+      <ToastContainer />
     </ReactFlowProvider>
   );
 }
