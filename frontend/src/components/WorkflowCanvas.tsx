@@ -125,15 +125,15 @@ export function WorkflowCanvas() {
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         fitView
-        colorMode="dark"
+        colorMode="light"
         defaultEdgeOptions={{ animated: false }}
       >
-        <Background gap={20} size={1} color="#333" />
+        <Background gap={20} size={1} color="#e2e8f0" />
         <Controls />
         <MiniMap
-          style={{ background: '#1a1a2e' }}
-          nodeColor={(node) => (node.type === 'configNode' ? '#66d9a0' : '#4a9eff')}
-          maskColor="rgba(0,0,0,0.5)"
+          style={{ background: '#ffffff' }}
+          nodeColor={(node) => (node.type === 'configNode' ? '#15803d' : '#2563eb')}
+          maskColor="rgba(255,255,255,0.7)"
         />
       </ReactFlow>
     </div>

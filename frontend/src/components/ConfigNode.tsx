@@ -9,25 +9,25 @@ export const ConfigNode = memo(function ConfigNode({ data, selected }: NodeProps
   return (
     <div
       style={{
-        background: selected ? '#1a3a1a' : '#1a2e1a',
-        border: `2px solid ${selected ? '#66d9a0' : '#3a6a3a'}`,
+        background: selected ? '#f0fdf4' : '#ffffff',
+        border: `2px solid ${selected ? '#15803d' : '#bbf7d0'}`,
         borderRadius: 8,
         minWidth: 140,
         fontSize: 12,
-        color: '#e0e0e0',
-        boxShadow: selected ? '0 0 12px rgba(102,217,160,0.3)' : '0 2px 8px rgba(0,0,0,0.3)',
+        color: '#1e293b',
+        boxShadow: selected ? '0 0 12px rgba(21,128,61,0.25)' : '0 2px 8px rgba(0,0,0,0.08)',
       }}
     >
       {/* Header */}
       <div
         style={{
           padding: '5px 10px',
-          borderBottom: '1px solid #3a6a3a',
+          borderBottom: '1px solid #bbf7d0',
           fontWeight: 700,
           fontSize: 11,
-          background: 'rgba(102,217,160,0.1)',
+          background: 'rgba(21,128,61,0.08)',
           borderRadius: '6px 6px 0 0',
-          color: '#66d9a0',
+          color: '#15803d',
           textTransform: 'uppercase',
           letterSpacing: 1,
         }}
@@ -44,7 +44,7 @@ export const ConfigNode = memo(function ConfigNode({ data, selected }: NodeProps
               position={Position.Right}
               id={f.name}
               style={{
-                background: '#66d9a0',
+                background: '#15803d',
                 width: 8,
                 height: 8,
                 right: -16,
@@ -54,8 +54,8 @@ export const ConfigNode = memo(function ConfigNode({ data, selected }: NodeProps
               }}
               title={`config: ${f.name}`}
             />
-            <span style={{ color: '#aadaba' }}>{f.name}</span>
-            <span style={{ color: '#6a8a6a' }}>: {f.type_name}</span>
+            <span style={{ color: '#15803d' }}>{f.name}</span>
+            <span style={{ color: '#4ade80' }}>: {f.type_name}</span>
           </div>
         ))}
       </div>

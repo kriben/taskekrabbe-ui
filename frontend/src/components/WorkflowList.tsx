@@ -6,7 +6,7 @@ export function WorkflowList() {
   if (existingWorkflows.length === 0) return null;
 
   return (
-    <div style={{ borderTop: '1px solid #444', padding: 8 }}>
+    <div style={{ borderTop: '1px solid #e2e8f0', padding: 8 }}>
       <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 6 }}>
         Existing Workflows
       </div>
@@ -17,15 +17,15 @@ export function WorkflowList() {
           style={{
             padding: '6px 8px',
             marginBottom: 3,
-            background: '#2a2a2a',
-            border: '1px solid #444',
+            background: '#f8fafc',
+            border: '1px solid #e2e8f0',
             borderRadius: 4,
             cursor: 'pointer',
             fontSize: 12,
           }}
         >
           <div style={{ fontWeight: 600 }}>{wf.name}</div>
-          <div style={{ color: '#888', fontSize: 10 }}>
+          <div style={{ color: '#94a3b8', fontSize: 10 }}>
             {wf.source} · {wf.tasks.length} tasks
           </div>
         </div>

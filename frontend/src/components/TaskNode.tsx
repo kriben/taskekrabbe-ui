@@ -9,24 +9,25 @@ export const TaskNode = memo(function TaskNode({ data, selected }: NodeProps) {
   return (
     <div
       style={{
-        background: selected ? '#2a3a5a' : '#1e1e2e',
-        border: `2px solid ${selected ? '#4a9eff' : '#444'}`,
+        background: selected ? '#eff6ff' : '#ffffff',
+        border: `2px solid ${selected ? '#2563eb' : '#e2e8f0'}`,
         borderRadius: 8,
         minWidth: 180,
         fontSize: 12,
-        color: '#e0e0e0',
-        boxShadow: selected ? '0 0 12px rgba(74,158,255,0.3)' : '0 2px 8px rgba(0,0,0,0.3)',
+        color: '#1e293b',
+        boxShadow: selected ? '0 0 12px rgba(37,99,235,0.2)' : '0 2px 8px rgba(0,0,0,0.08)',
       }}
     >
       {/* Header */}
       <div
         style={{
           padding: '6px 12px',
-          borderBottom: '1px solid #444',
+          borderBottom: '1px solid #e2e8f0',
           fontWeight: 700,
           fontSize: 13,
-          background: 'rgba(74,158,255,0.1)',
+          background: 'rgba(37,99,235,0.06)',
           borderRadius: '6px 6px 0 0',
+          color: '#1e40af',
         }}
       >
         {instanceName || taskInfo.name}
@@ -34,8 +35,8 @@ export const TaskNode = memo(function TaskNode({ data, selected }: NodeProps) {
 
       {/* I/O types */}
       <div style={{ padding: '6px 12px', display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-        <div style={{ color: '#8bc' }}>
-          <div style={{ fontSize: 9, color: '#888', textTransform: 'uppercase' }}>In</div>
+        <div style={{ color: '#1e40af' }}>
+          <div style={{ fontSize: 9, color: '#94a3b8', textTransform: 'uppercase' }}>In</div>
           {taskInfo.input_fields.length > 1 ? (
             taskInfo.input_fields.map((f) => (
               <div key={f.name} style={{ position: 'relative', fontSize: 11 }}>
@@ -44,7 +45,7 @@ export const TaskNode = memo(function TaskNode({ data, selected }: NodeProps) {
                   position={Position.Left}
                   id={f.name}
                   style={{
-                    background: '#4a9eff',
+                    background: '#2563eb',
                     width: 8,
                     height: 8,
                     left: -16,
@@ -53,7 +54,7 @@ export const TaskNode = memo(function TaskNode({ data, selected }: NodeProps) {
                   }}
                   title={`${f.name}: ${f.type_name}`}
                 />
-                {f.name}: <span style={{ color: '#acd' }}>{f.type_name}</span>
+                {f.name}: <span style={{ color: '#3b82f6' }}>{f.type_name}</span>
               </div>
             ))
           ) : (
@@ -63,7 +64,7 @@ export const TaskNode = memo(function TaskNode({ data, selected }: NodeProps) {
                 position={Position.Left}
                 id="input"
                 style={{
-                  background: '#4a9eff',
+                  background: '#2563eb',
                   width: 10,
                   height: 10,
                   left: -16,
@@ -75,8 +76,8 @@ export const TaskNode = memo(function TaskNode({ data, selected }: NodeProps) {
             </div>
           )}
         </div>
-        <div style={{ color: '#bc8', textAlign: 'right' }}>
-          <div style={{ fontSize: 9, color: '#888', textTransform: 'uppercase' }}>Out</div>
+        <div style={{ color: '#9a3412', textAlign: 'right' }}>
+          <div style={{ fontSize: 9, color: '#94a3b8', textTransform: 'uppercase' }}>Out</div>
           {taskInfo.output_type_name === 'Outputs' ? (
             taskInfo.output_fields.map((f) => (
               <div key={f.name} style={{ position: 'relative', fontSize: 11 }}>
@@ -85,7 +86,7 @@ export const TaskNode = memo(function TaskNode({ data, selected }: NodeProps) {
                   position={Position.Right}
                   id={f.name}
                   style={{
-                    background: '#ff9e4a',
+                    background: '#ea580c',
                     width: 8,
                     height: 8,
                     right: -16,
@@ -95,7 +96,7 @@ export const TaskNode = memo(function TaskNode({ data, selected }: NodeProps) {
                   }}
                   title={`${f.name}: ${f.type_name}`}
                 />
-                {f.name}: <span style={{ color: '#dca' }}>{f.type_name}</span>
+                {f.name}: <span style={{ color: '#ea580c' }}>{f.type_name}</span>
               </div>
             ))
           ) : (
@@ -105,7 +106,7 @@ export const TaskNode = memo(function TaskNode({ data, selected }: NodeProps) {
                 position={Position.Right}
                 id="output"
                 style={{
-                  background: '#ff9e4a',
+                  background: '#ea580c',
                   width: 10,
                   height: 10,
                   right: -16,

@@ -46,8 +46,8 @@ export default function App() {
           display: 'flex',
           flexDirection: 'column',
           height: '100vh',
-          background: '#121220',
-          color: '#e0e0e0',
+          background: '#f5f7fa',
+          color: '#1e293b',
           fontFamily: 'system-ui, -apple-system, sans-serif',
         }}
       >
@@ -57,10 +57,10 @@ export default function App() {
           <div
             style={{
               width: 220,
-              borderRight: '1px solid #333',
+              borderRight: '1px solid #e2e8f0',
               display: 'flex',
               flexDirection: 'column',
-              background: '#1a1a2e',
+              background: '#ffffff',
             }}
           >
             <TaskPalette />
@@ -74,8 +74,8 @@ export default function App() {
           <div
             style={{
               width: 240,
-              borderLeft: '1px solid #333',
-              background: '#1a1a2e',
+              borderLeft: '1px solid #e2e8f0',
+              background: '#ffffff',
               overflow: 'auto',
             }}
           >
@@ -87,10 +87,10 @@ export default function App() {
         <div
           style={{
             height: 200,
-            borderTop: '1px solid #333',
+            borderTop: '1px solid #e2e8f0',
             display: 'flex',
             flexDirection: 'column',
-            background: '#1a1a2e',
+            background: '#ffffff',
           }}
         >
           {/* Toolbar */}
@@ -100,8 +100,8 @@ export default function App() {
               alignItems: 'center',
               gap: 8,
               padding: '6px 12px',
-              borderBottom: '1px solid #333',
-              background: '#16162a',
+              borderBottom: '1px solid #e2e8f0',
+              background: '#f8fafc',
               flexWrap: 'wrap',
             }}
           >
@@ -115,10 +115,10 @@ export default function App() {
               style={{
                 padding: '4px 8px',
                 width: 140,
-                border: '1px solid #555',
+                border: '1px solid #cbd5e1',
                 borderRadius: 4,
-                background: '#2a2a2a',
-                color: '#e0e0e0',
+                background: '#ffffff',
+                color: '#1e293b',
                 fontSize: 12,
                 fontFamily: 'monospace',
               }}
@@ -128,7 +128,7 @@ export default function App() {
               disabled={nodes.length === 0}
               style={{
                 padding: '5px 14px',
-                background: nodes.length === 0 ? '#444' : '#2a8a4a',
+                background: nodes.length === 0 ? '#cbd5e1' : '#16a34a',
                 color: '#fff',
                 border: 'none',
                 borderRadius: 4,
@@ -144,7 +144,7 @@ export default function App() {
               disabled={nodes.length === 0}
               style={{
                 padding: '5px 14px',
-                background: nodes.length === 0 ? '#444' : '#4a9eff',
+                background: nodes.length === 0 ? '#cbd5e1' : '#2563eb',
                 color: '#fff',
                 border: 'none',
                 borderRadius: 4,
@@ -159,8 +159,8 @@ export default function App() {
               onClick={clearWorkflow}
               style={{
                 padding: '5px 14px',
-                background: '#555',
-                color: '#ccc',
+                background: '#e2e8f0',
+                color: '#475569',
                 border: 'none',
                 borderRadius: 4,
                 cursor: 'pointer',
@@ -170,22 +170,22 @@ export default function App() {
               Clear
             </button>
             {statusMsg && (
-              <span style={{ fontSize: 12, color: '#8f8' }}>{statusMsg}</span>
+              <span style={{ fontSize: 12, color: '#16a34a' }}>{statusMsg}</span>
             )}
           </div>
 
           {/* Tab bar */}
-          <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid #333' }}>
+          <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid #e2e8f0' }}>
             {(['yaml', 'validation'] as BottomTab[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setBottomTab(tab)}
                 style={{
                   padding: '4px 16px',
-                  background: bottomTab === tab ? '#1e1e2e' : 'transparent',
-                  color: bottomTab === tab ? '#4a9eff' : '#888',
+                  background: bottomTab === tab ? '#ffffff' : 'transparent',
+                  color: bottomTab === tab ? '#2563eb' : '#94a3b8',
                   border: 'none',
-                  borderBottom: bottomTab === tab ? '2px solid #4a9eff' : '2px solid transparent',
+                  borderBottom: bottomTab === tab ? '2px solid #2563eb' : '2px solid transparent',
                   cursor: 'pointer',
                   fontSize: 12,
                   fontWeight: 600,
@@ -203,11 +203,11 @@ export default function App() {
             {bottomTab === 'validation' && (
               <div style={{ padding: 12, fontSize: 12 }}>
                 {validationErrors.length === 0 ? (
-                  <div style={{ color: '#6f6' }}>Workflow is valid</div>
+                  <div style={{ color: '#16a34a' }}>Workflow is valid</div>
                 ) : (
                   <ul style={{ margin: 0, paddingLeft: 20 }}>
                     {validationErrors.map((err, i) => (
-                      <li key={i} style={{ color: '#f66', marginBottom: 4 }}>
+                      <li key={i} style={{ color: '#dc2626', marginBottom: 4 }}>
                         {err}
                       </li>
                     ))}

@@ -5,7 +5,7 @@ export function YamlPreview() {
 
   if (!generatedYaml) {
     return (
-      <div style={{ padding: 12, color: '#888', fontSize: 12 }}>
+      <div style={{ padding: 12, color: '#94a3b8', fontSize: 12 }}>
         Click "Export YAML" to generate workflow configuration
       </div>
     );
@@ -20,8 +20,8 @@ export function YamlPreview() {
         lineHeight: 1.5,
         overflow: 'auto',
         height: '100%',
-        background: '#1a1a2e',
-        color: '#c8d6e5',
+        background: '#f8fafc',
+        color: '#334155',
         fontFamily: 'monospace',
       }}
     >

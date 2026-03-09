@@ -26,10 +26,10 @@ export function ConfigEdge({
     <BaseEdge
       id={id}
       path={edgePath}
-      style={{ stroke: '#66d9a0', strokeWidth: 1.5, strokeDasharray: '5,3' }}
+      style={{ stroke: '#15803d', strokeWidth: 1.5, strokeDasharray: '5,3' }}
       label={label}
-      labelStyle={{ fill: '#88bb99', fontSize: 10 }}
-      labelBgStyle={{ fill: '#1a2e1a' }}
+      labelStyle={{ fill: '#15803d', fontSize: 10 }}
+      labelBgStyle={{ fill: '#ffffff' }}
       labelBgPadding={[4, 2] as [number, number]}
     />
   );

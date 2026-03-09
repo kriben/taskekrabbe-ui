@@ -19,7 +19,7 @@ export function TaskPalette() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div style={{ padding: 8, fontWeight: 700, fontSize: 14, borderBottom: '1px solid #444' }}>
+      <div style={{ padding: 8, fontWeight: 700, fontSize: 14, borderBottom: '1px solid #e2e8f0' }}>
         Tasks ({availableTasks.length})
       </div>
       <div style={{ padding: 8 }}>
@@ -31,10 +31,10 @@ export function TaskPalette() {
           style={{
             width: '100%',
             padding: '5px 8px',
-            border: '1px solid #555',
+            border: '1px solid #cbd5e1',
             borderRadius: 4,
-            background: '#2a2a2a',
-            color: '#e0e0e0',
+            background: '#ffffff',
+            color: '#1e293b',
             fontSize: 12,
             boxSizing: 'border-box',
           }}
@@ -42,7 +42,7 @@ export function TaskPalette() {
       </div>
       <div style={{ flex: 1, overflow: 'auto', padding: '0 8px 8px' }}>
         {filtered.length === 0 && (
-          <div style={{ color: '#888', fontSize: 12, padding: 8 }}>
+          <div style={{ color: '#94a3b8', fontSize: 12, padding: 8 }}>
             {availableTasks.length === 0 ? 'Scan a directory to discover tasks' : 'No matches'}
           </div>
         )}
@@ -54,15 +54,15 @@ export function TaskPalette() {
             style={{
               padding: '8px 10px',
               marginBottom: 4,
-              background: '#2a2a2a',
-              border: '1px solid #444',
+              background: '#f8fafc',
+              border: '1px solid #e2e8f0',
               borderRadius: 6,
               cursor: 'grab',
               fontSize: 12,
             }}
           >
             <div style={{ fontWeight: 600, marginBottom: 2 }}>{task.name}</div>
-            <div style={{ color: '#aaa', fontSize: 11 }}>
+            <div style={{ color: '#64748b', fontSize: 11 }}>
               {task.input_type_name} → {task.output_type_name}
             </div>
           </div>

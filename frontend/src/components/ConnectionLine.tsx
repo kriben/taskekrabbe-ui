@@ -32,10 +32,10 @@ export function ConnectionLine({
     <BaseEdge
       id={id}
       path={edgePath}
-      style={{ stroke: '#4a9eff', strokeWidth: 2 }}
+      style={{ stroke: '#2563eb', strokeWidth: 2 }}
       label={label}
-      labelStyle={{ fill: '#aaa', fontSize: 10 }}
-      labelBgStyle={{ fill: '#1e1e2e' }}
+      labelStyle={{ fill: '#64748b', fontSize: 10 }}
+      labelBgStyle={{ fill: '#ffffff' }}
       labelBgPadding={[4, 2] as [number, number]}
     />
   );

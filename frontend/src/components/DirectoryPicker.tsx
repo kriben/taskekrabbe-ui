@@ -26,10 +26,10 @@ export function DirectoryPicker() {
         style={{
           flex: 1,
           padding: '6px 10px',
-          border: '1px solid #555',
+          border: '1px solid #cbd5e1',
           borderRadius: 4,
-          background: '#2a2a2a',
-          color: '#e0e0e0',
+          background: '#ffffff',
+          color: '#1e293b',
           fontFamily: 'monospace',
           fontSize: 13,
         }}
@@ -39,7 +39,7 @@ export function DirectoryPicker() {
         disabled={isScanning}
         style={{
           padding: '6px 16px',
-          background: isScanning ? '#555' : '#4a9eff',
+          background: isScanning ? '#cbd5e1' : '#2563eb',
           color: '#fff',
           border: 'none',
           borderRadius: 4,
@@ -50,9 +50,9 @@ export function DirectoryPicker() {
         {isScanning ? 'Scanning...' : 'Scan'}
       </button>
       {scannedDirectory && !error && (
-        <span style={{ color: '#6f6', fontSize: 13 }}>Scanned</span>
+        <span style={{ color: '#16a34a', fontSize: 13 }}>Scanned</span>
       )}
-      {error && <span style={{ color: '#f66', fontSize: 13 }}>{error}</span>}
+      {error && <span style={{ color: '#dc2626', fontSize: 13 }}>{error}</span>}
     </div>
   );
 }
