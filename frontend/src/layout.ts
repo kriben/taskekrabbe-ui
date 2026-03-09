@@ -1,16 +1,15 @@
 import type { Node, Edge } from '@xyflow/react';
 
-const NODE_WIDTH = 200;
 const NODE_HEIGHT = 120;
 const LAYER_GAP_X = 300;
 const NODE_GAP_Y = 40;
-const CONFIG_OFFSET_X = -220;
-const CONFIG_OFFSET_Y = -60;
+const CONFIG_NODE_HEIGHT = 80;
 
 /**
  * Layered DAG layout (Sugiyama-style).
  * Assigns each node to a layer based on longest path from sources,
  * then spaces nodes vertically within each layer.
+ * Config nodes are placed neatly above their target task node.
  */
 export function layoutNodes(nodes: Node[], edges: Edge[]): Node[] {
   // Separate task nodes from config nodes
@@ -35,7 +34,7 @@ export function layoutNodes(nodes: Node[], edges: Edge[]): Node[] {
     inDegree[e.target] = (inDegree[e.target] ?? 0) + 1;
   }
 
-  // Assign layers via longest-path (ensures downstream nodes are always in later layers)
+  // Assign layers via longest-path
   const layer: Record<string, number> = {};
   for (const id of taskIds) layer[id] = 0;
 
@@ -56,7 +55,7 @@ export function layoutNodes(nodes: Node[], edges: Edge[]): Node[] {
     }
   }
 
-  // Handle any nodes not reached (cycles or disconnected) - put them at layer 0
+  // Handle any nodes not reached (cycles or disconnected)
   for (const n of taskNodes) {
     if (!order.includes(n.id)) {
       order.push(n.id);
@@ -80,7 +79,6 @@ export function layoutNodes(nodes: Node[], edges: Edge[]): Node[] {
     const prevLayer = layers[l - 1] ?? [];
 
     for (const id of nodesInLayer) {
-      // Find parents in previous layer
       const parents = dataEdges
         .filter((e) => e.target === id && prevLayer.includes(e.source))
         .map((e) => prevLayer.indexOf(e.source));
@@ -96,45 +94,76 @@ export function layoutNodes(nodes: Node[], edges: Edge[]): Node[] {
     layers[l] = nodesInLayer;
   }
 
-  // Assign positions
-  const nodeById = new Map(nodes.map((n) => [n.id, n]));
+  // Build a map of task node id -> config node for slot accounting
+  const configByTarget: Record<string, Node> = {};
+  for (const cn of configNodes) {
+    const configData = cn.data as { targetTaskNodeId?: string };
+    if (configData.targetTaskNodeId) {
+      configByTarget[configData.targetTaskNodeId] = cn;
+    }
+  }
+
+  // Compute slot height per layer entry: task node + optional config node stacked above
+  const slotHeight = (taskId: string) => {
+    const hasConfig = taskId in configByTarget;
+    return hasConfig
+      ? CONFIG_NODE_HEIGHT + 16 + NODE_HEIGHT // config + gap + task
+      : NODE_HEIGHT;
+  };
+
+  // Assign positions, accounting for config nodes stacked above their target
   const positionMap: Record<string, { x: number; y: number }> = {};
 
-  // Find the tallest layer to center shorter ones
-  let maxLayerSize = 0;
+  // Find the tallest layer (in pixels) to center shorter ones
+  let maxLayerHeight = 0;
   for (let l = 0; l <= maxLayer; l++) {
-    maxLayerSize = Math.max(maxLayerSize, (layers[l] ?? []).length);
+    const ids = layers[l] ?? [];
+    let layerHeight = 0;
+    for (const id of ids) {
+      layerHeight += slotHeight(id);
+    }
+    layerHeight += (ids.length - 1) * NODE_GAP_Y;
+    maxLayerHeight = Math.max(maxLayerHeight, layerHeight);
   }
 
   for (let l = 0; l <= maxLayer; l++) {
     const ids = layers[l] ?? [];
-    const totalHeight = ids.length * NODE_HEIGHT + (ids.length - 1) * NODE_GAP_Y;
-    const maxTotalHeight = maxLayerSize * NODE_HEIGHT + (maxLayerSize - 1) * NODE_GAP_Y;
-    const startY = (maxTotalHeight - totalHeight) / 2 + 60;
 
-    ids.forEach((id, index) => {
-      positionMap[id] = {
-        x: 60 + l * LAYER_GAP_X,
-        y: startY + index * (NODE_HEIGHT + NODE_GAP_Y),
-      };
-    });
+    // Total height of this layer
+    let layerHeight = 0;
+    for (const id of ids) {
+      layerHeight += slotHeight(id);
+    }
+    layerHeight += (ids.length - 1) * NODE_GAP_Y;
+
+    const startY = (maxLayerHeight - layerHeight) / 2 + 60;
+    const x = 60 + l * LAYER_GAP_X;
+
+    let currentY = startY;
+    for (const id of ids) {
+      const hasConfig = id in configByTarget;
+
+      if (hasConfig) {
+        // Place config node above the task node in the same column
+        positionMap[configByTarget[id].id] = {
+          x: x,
+          y: currentY,
+        };
+        currentY += CONFIG_NODE_HEIGHT + 16; // config height + gap
+      }
+
+      positionMap[id] = { x, y: currentY };
+      currentY += NODE_HEIGHT + NODE_GAP_Y;
+    }
   }
 
-  // Position config nodes relative to their target task node
+  // Handle config nodes whose target wasn't found (shouldn't happen, but be safe)
   for (const cn of configNodes) {
-    const configData = cn.data as { targetTaskNodeId?: string };
-    const targetPos = configData.targetTaskNodeId ? positionMap[configData.targetTaskNodeId] : null;
-    if (targetPos) {
-      positionMap[cn.id] = {
-        x: targetPos.x + CONFIG_OFFSET_X,
-        y: targetPos.y + CONFIG_OFFSET_Y,
-      };
-    } else {
+    if (!positionMap[cn.id]) {
       positionMap[cn.id] = cn.position;
     }
   }
 
-  // Return nodes with updated positions
   return nodes.map((n) => ({
     ...n,
     position: positionMap[n.id] ?? n.position,
