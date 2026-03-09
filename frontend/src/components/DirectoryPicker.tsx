@@ -3,7 +3,7 @@ import { useWorkflowStore } from '../store/workflowStore';
 import { useToastStore } from '../store/toastStore';
 
 export function DirectoryPicker() {
-  const [directory, setDirectory] = useState('/workspace/taskekrabbe/examples/text_analysis');
+  const [directory, setDirectory] = useState('/workspace/taskekrabbe/examples/');
   const { scanDirectory, isScanning } = useWorkflowStore();
   const addToast = useToastStore((s) => s.addToast);
 
@@ -25,7 +25,8 @@ export function DirectoryPicker() {
         onChange={(e) => setDirectory(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && handleScan()}
         style={{
-          flex: 1,
+          flex: 2,
+          minWidth: 400,
           padding: '6px 10px',
           border: '1px solid #cbd5e1',
           borderRadius: 4,
