@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { ReactFlowProvider } from '@xyflow/react';
 import { useWorkflowStore } from './store/workflowStore';
 import { DirectoryPicker } from './components/DirectoryPicker';
@@ -22,6 +22,31 @@ export default function App() {
   } = useWorkflowStore();
   const [bottomTab, setBottomTab] = useState<BottomTab>('yaml');
   const [statusMsg, setStatusMsg] = useState('');
+  const [bottomHeight, setBottomHeight] = useState(200);
+  const dragging = useRef(false);
+  const startY = useRef(0);
+  const startHeight = useRef(0);
+
+  const onResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    dragging.current = true;
+    startY.current = e.clientY;
+    startHeight.current = bottomHeight;
+
+    const onMouseMove = (ev: MouseEvent) => {
+      if (!dragging.current) return;
+      const delta = startY.current - ev.clientY;
+      const newHeight = Math.min(Math.max(startHeight.current + delta, 100), window.innerHeight - 200);
+      setBottomHeight(newHeight);
+    };
+    const onMouseUp = () => {
+      dragging.current = false;
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  }, [bottomHeight]);
 
   const handleValidate = async () => {
     await validate();
@@ -83,11 +108,22 @@ export default function App() {
           </div>
         </div>
 
+        {/* Resize handle */}
+        <div
+          onMouseDown={onResizeStart}
+          style={{
+            height: 5,
+            cursor: 'row-resize',
+            background: '#e2e8f0',
+            flexShrink: 0,
+          }}
+          title="Drag to resize"
+        />
+
         {/* Bottom panel */}
         <div
           style={{
-            height: 200,
-            borderTop: '1px solid #e2e8f0',
+            height: bottomHeight,
             display: 'flex',
             flexDirection: 'column',
             background: '#ffffff',
