@@ -210,7 +210,7 @@ def scan_directory(directory: Path) -> ScanResponse:
                             task_import_path=task_path,
                             instance_name=tc.name,
                             depends_on=deps,
-                            config_fields=None,
+                            config_fields=tc.config_fields,
                         )
                     )
                 workflows.append(
