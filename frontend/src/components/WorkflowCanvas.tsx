@@ -107,8 +107,29 @@ export function WorkflowCanvas() {
     [nodes]
   );
 
+  const workflowName = useWorkflowStore((s) => s.workflowName);
+
   return (
-    <div style={{ flex: 1, height: '100%' }}>
+    <div style={{ flex: 1, height: '100%', position: 'relative' }}>
+      <div
+        style={{
+          position: 'absolute',
+          top: 10,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 5,
+          padding: '4px 16px',
+          background: 'rgba(255,255,255,0.85)',
+          borderRadius: 6,
+          border: '1px solid #e2e8f0',
+          fontSize: 14,
+          fontWeight: 600,
+          color: '#334155',
+          pointerEvents: 'none',
+        }}
+      >
+        Workflow: {workflowName}
+      </div>
       <ReactFlow
         nodes={nodes}
         edges={edges}
