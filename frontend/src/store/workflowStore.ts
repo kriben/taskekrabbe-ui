@@ -285,11 +285,16 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
 
       let depends_on: WorkflowNodeDef['depends_on'] = null;
       if (incoming.length === 1) {
-        const sourceHandle = incoming[0].sourceHandle;
-        const sourceName = nodeNameMap[incoming[0].source];
+        const edge = incoming[0];
+        const sourceHandle = edge.sourceHandle;
+        const sourceName = nodeNameMap[edge.source];
+        const targetHandle = edge.targetHandle || 'input';
         if (sourceHandle && sourceHandle !== 'output') {
           // Field routing: [task_name, field_name]
           depends_on = [sourceName, sourceHandle];
+        } else if (targetHandle !== 'input') {
+          // Single dep with named target field: use dict to preserve mapping
+          depends_on = { [targetHandle]: sourceName };
         } else {
           depends_on = sourceName;
         }
