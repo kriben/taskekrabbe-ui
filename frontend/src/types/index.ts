@@ -10,6 +10,7 @@ export interface TaskInfo {
   import_path: string;
   input_type_name: string;
   input_fields: FieldInfo[];
+  fan_in_input: boolean;
   output_type_name: string;
   output_fields: FieldInfo[];
   timeout_seconds: number | null;

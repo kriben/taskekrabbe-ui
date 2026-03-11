@@ -19,6 +19,7 @@ class TaskInfo(BaseModel):
     import_path: str
     input_type_name: str
     input_fields: list[FieldInfo]
+    fan_in_input: bool = False
     output_type_name: str
     output_fields: list[FieldInfo]
     timeout_seconds: float | None = None

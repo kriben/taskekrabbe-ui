@@ -37,7 +37,7 @@ export const TaskNode = memo(function TaskNode({ data, selected }: NodeProps) {
       <div style={{ padding: '6px 12px', display: 'flex', justifyContent: 'space-between', gap: 12 }}>
         <div style={{ color: '#1e40af' }}>
           <div style={{ fontSize: 9, color: '#94a3b8', textTransform: 'uppercase' }}>In</div>
-          {taskInfo.input_fields.length > 1 ? (
+          {taskInfo.fan_in_input ? (
             taskInfo.input_fields.map((f) => (
               <div key={f.name} style={{ position: 'relative', fontSize: 11 }}>
                 <Handle

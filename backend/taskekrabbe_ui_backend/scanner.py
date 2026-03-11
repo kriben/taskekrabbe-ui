@@ -40,25 +40,45 @@ def _extract_fields(model_cls: type[BaseModel]) -> list[FieldInfo]:
     return fields
 
 
+def _is_fan_in_input(model_cls: type[BaseModel]) -> bool:
+    """Check if an input model is a fan-in type (fields are BaseModel subclasses)."""
+    fields = model_cls.model_fields
+    if len(fields) <= 1:
+        return False
+    return any(
+        isinstance(f.annotation, type) and issubclass(f.annotation, BaseModel)
+        for f in fields.values()
+        if f.annotation is not None
+    )
+
+
 def _type_name(tp: type) -> str:
     """Get a human-readable type name."""
     return getattr(tp, "__name__", str(tp))
 
 
-def _task_import_path(task_cls: type[Task[Any, Any]], module_name: str) -> str:
-    """Build a dotted import path for a task class."""
-    return f"{module_name}.{task_cls.__name__}"
+def _task_import_path(task_cls: type[Task[Any, Any]], module_name: str, attr_name: str | None = None) -> str:
+    """Build a dotted import path for a task class.
+
+    Uses *attr_name* (the variable name in the module namespace) when provided,
+    falling back to ``task_cls.__name__``.  This matters for dynamically-named
+    classes like those created by ``workflow_task()`` where ``__name__`` differs
+    from the attribute the class is assigned to.
+    """
+    cls_name = attr_name if attr_name is not None else task_cls.__name__
+    return f"{module_name}.{cls_name}"
 
 
-def _inspect_task(task_cls: type[Task[Any, Any]], module_name: str) -> TaskInfo:
+def _inspect_task(task_cls: type[Task[Any, Any]], module_name: str, attr_name: str | None = None) -> TaskInfo:
     """Build a TaskInfo from a Task subclass."""
     input_type = get_input_type(task_cls)
     output_type = get_output_type(task_cls)
     return TaskInfo(
         name=task_cls.name,
-        import_path=_task_import_path(task_cls, module_name),
+        import_path=_task_import_path(task_cls, module_name, attr_name),
         input_type_name=_type_name(input_type),
         input_fields=_extract_fields(input_type),
+        fan_in_input=_is_fan_in_input(input_type),
         output_type_name=_type_name(output_type),
         output_fields=_extract_fields(output_type),
         timeout_seconds=task_cls.timeout_seconds,
@@ -91,9 +111,19 @@ def _extract_workflow_nodes(workflow: Workflow) -> list[WorkflowNodeDef]:
         # Use custom name if it differs from the class name
         instance_name = task_name if task_name != task_cls.__name__ else None
 
-        # Build import path from the task class module
+        # Build import path from the task class module.
+        # For dynamically-named classes (e.g. workflow_task), __name__ may
+        # differ from the attribute name in the module, so search for the
+        # actual attribute that references this class.
         module = task_cls.__module__
-        import_path = f"{module}.{task_cls.__name__}"
+        mod_obj = sys.modules.get(module)
+        attr = task_cls.__name__
+        if mod_obj is not None:
+            for a in dir(mod_obj):
+                if getattr(mod_obj, a, None) is task_cls:
+                    attr = a
+                    break
+        import_path = f"{module}.{attr}"
 
         nodes.append(
             WorkflowNodeDef(
@@ -161,13 +191,13 @@ def scan_directory(directory: Path) -> ScanResponse:
                     and issubclass(obj, Task)
                     and obj is not Task
                     and not getattr(obj, "__abstractmethods__", set())
-                    and obj.__module__ == module.__name__
+                    and (obj.__module__ == module.__name__ or hasattr(obj, "_inner_workflow"))
                 ):
-                    import_path = _task_import_path(obj, module_name)
+                    import_path = _task_import_path(obj, module_name, attr_name)
                     if import_path not in seen_tasks:
                         seen_tasks.add(import_path)
                         try:
-                            task_info = _inspect_task(obj, module_name)
+                            task_info = _inspect_task(obj, module_name, attr_name)
                             tasks.append(task_info)
                         except TypeError:
                             # Can't resolve type args — skip
@@ -204,6 +234,16 @@ def scan_directory(directory: Path) -> ScanResponse:
                 nodes = []
                 for tc in config.workflow.tasks:
                     task_path = tc.task or tc.workflow or ""
+
+                    # For workflow: entries, resolve to a matching workflow_task
+                    if tc.workflow and tc.name:
+                        wt_match = next(
+                            (t for t in tasks if t.name == tc.name),
+                            None,
+                        )
+                        if wt_match:
+                            task_path = wt_match.import_path
+
                     deps = tc.depends_on
                     nodes.append(
                         WorkflowNodeDef(

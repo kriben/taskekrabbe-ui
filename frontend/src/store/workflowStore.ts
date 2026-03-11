@@ -189,7 +189,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
       } else {
         // Add the field
         const newFields = [...configData.fields, { name: fieldInfo.name, type_name: fieldInfo.type_name }];
-        const targetHandle = taskData.taskInfo.input_fields.length > 1 ? fieldName : 'input';
+        const targetHandle = taskData.taskInfo.fan_in_input ? fieldName : 'input';
         const newEdge: Edge = {
           id: `cfgedge_${existingConfigNode.id}_${taskNodeId}_${fieldName}`,
           source: existingConfigNode.id,
@@ -221,7 +221,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
           fields: [{ name: fieldInfo.name, type_name: fieldInfo.type_name }],
         } satisfies ConfigNodeData,
       };
-      const targetHandle = taskData.taskInfo.input_fields.length > 1 ? fieldName : 'input';
+      const targetHandle = taskData.taskInfo.fan_in_input ? fieldName : 'input';
       const configEdge: Edge = {
         id: `cfgedge_${configNodeId}_${taskNodeId}_${fieldName}`,
         source: configNodeId,
@@ -384,7 +384,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
           // If the target has multiple input fields, find the matching field
           // by looking for a field whose type matches the source output type
           let targetHandle = 'input';
-          if (taskInfo.input_fields.length > 1) {
+          if (taskInfo.fan_in_input) {
             const sourceNode = newNodes.find((n) => n.id === sourceId);
             if (sourceNode) {
               const sourceData = sourceNode.data as TaskNodeData;
@@ -482,7 +482,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
       });
 
       for (const field of fields) {
-        const targetHandle = taskInfo.input_fields.length > 1 ? field.name : 'input';
+        const targetHandle = taskInfo.fan_in_input ? field.name : 'input';
         newEdges.push({
           id: `cfgedge_${configNodeId}_${taskNodeId}_${field.name}`,
           source: configNodeId,
