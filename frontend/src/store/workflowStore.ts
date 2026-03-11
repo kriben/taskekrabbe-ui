@@ -28,6 +28,7 @@ interface WorkflowStore {
   selectedNodeId: string | null;
   validationErrors: string[];
   generatedYaml: string;
+  generatedInputYaml: string;
   workflowName: string;
   isScanning: boolean;
 
@@ -41,6 +42,7 @@ interface WorkflowStore {
   setWorkflowName: (name: string) => void;
   validate: () => Promise<void>;
   exportYaml: () => Promise<string>;
+  exportInputYaml: () => string;
   loadExistingWorkflow: (wf: ExistingWorkflow) => void;
   deleteNode: (id: string) => void;
   toggleConfigField: (taskNodeId: string, fieldName: string) => void;
@@ -60,6 +62,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
   selectedNodeId: null,
   validationErrors: [],
   generatedYaml: '',
+  generatedInputYaml: '',
   workflowName: 'new_workflow',
   isScanning: false,
 
@@ -143,6 +146,75 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
     } catch (e) {
       throw e;
     }
+  },
+
+  exportInputYaml: (): string => {
+    const { nodes, edges, workflowName } = get();
+    const taskNodes = nodes.filter((n) => n.type === 'taskNode');
+    const configNodeIds = new Set(nodes.filter((n) => n.type === 'configNode').map((n) => n.id));
+
+    // Build config fields map: taskNodeId -> field names from config edges
+    const configFieldsMap: Record<string, string[]> = {};
+    for (const edge of edges) {
+      if (edge.type === 'configEdge' && configNodeIds.has(edge.source)) {
+        if (!configFieldsMap[edge.target]) {
+          configFieldsMap[edge.target] = [];
+        }
+        if (edge.sourceHandle) {
+          configFieldsMap[edge.target].push(edge.sourceHandle);
+        }
+      }
+    }
+
+    const lines: string[] = [
+      `# Per-task input data for ${workflowName}`,
+      '#',
+      '# Each top-level key is a task name, with its configuration values.',
+      '',
+    ];
+
+    for (const node of taskNodes) {
+      const data = node.data as TaskNodeData;
+      const name = data.instanceName || data.taskInfo.name;
+      const configFields = configFieldsMap[node.id];
+      if (!configFields || configFields.length === 0) continue;
+
+      const fieldEntries: string[] = [];
+      for (const fieldName of configFields) {
+        const fieldInfo = data.taskInfo.input_fields.find((f) => f.name === fieldName);
+        let placeholder: string;
+        if (fieldInfo?.default != null) {
+          placeholder = typeof fieldInfo.default === 'string'
+            ? `"${fieldInfo.default}"`
+            : String(fieldInfo.default);
+        } else {
+          const typeName = fieldInfo?.type_name?.toLowerCase() ?? '';
+          if (typeName.includes('str') || typeName.includes('path')) {
+            placeholder = '""';
+          } else if (typeName.includes('int')) {
+            placeholder = '0';
+          } else if (typeName.includes('float')) {
+            placeholder = '0.0';
+          } else if (typeName.includes('bool')) {
+            placeholder = 'false';
+          } else {
+            placeholder = 'null';
+          }
+        }
+        fieldEntries.push(`  ${fieldName}: ${placeholder}`);
+      }
+
+      if (fieldEntries.length === 0) {
+        lines.push(`${name}: {}`);
+      } else {
+        lines.push(`${name}:`);
+        lines.push(...fieldEntries);
+      }
+    }
+
+    const yaml = lines.join('\n') + '\n';
+    set({ generatedInputYaml: yaml });
+    return yaml;
   },
 
   toggleConfigField: (taskNodeId: string, fieldName: string) => {
@@ -502,6 +574,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
       workflowName: wf.name,
       validationErrors: [],
       generatedYaml: '',
+      generatedInputYaml: '',
       selectedNodeId: null,
     });
   },
@@ -544,6 +617,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
       selectedNodeId: null,
       validationErrors: [],
       generatedYaml: '',
+      generatedInputYaml: '',
       workflowName: 'new_workflow',
     });
   },

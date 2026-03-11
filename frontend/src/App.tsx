@@ -7,15 +7,17 @@ import { WorkflowCanvas } from './components/WorkflowCanvas';
 import { TaskDetailPanel } from './components/TaskDetailPanel';
 import { WorkflowList } from './components/WorkflowList';
 import { YamlPreview } from './components/YamlPreview';
+import { InputYamlPreview } from './components/InputYamlPreview';
 import { ToastContainer } from './components/ToastContainer';
 import { useToastStore } from './store/toastStore';
 
-type BottomTab = 'yaml' | 'validation';
+type BottomTab = 'yaml' | 'input-yaml' | 'validation';
 
 export default function App() {
   const {
     validate,
     exportYaml,
+    exportInputYaml,
     validationErrors,
     workflowName,
     setWorkflowName,
@@ -61,6 +63,16 @@ export default function App() {
       await exportYaml();
       setBottomTab('yaml');
       addToast('YAML generated');
+    } catch (e) {
+      addToast(`Export failed: ${e}`, 'error');
+    }
+  };
+
+  const handleExportInputYaml = () => {
+    try {
+      exportInputYaml();
+      setBottomTab('input-yaml');
+      addToast('Input YAML generated');
     } catch (e) {
       addToast(`Export failed: ${e}`, 'error');
     }
@@ -196,6 +208,22 @@ export default function App() {
               Export YAML
             </button>
             <button
+              onClick={handleExportInputYaml}
+              disabled={nodes.length === 0}
+              style={{
+                padding: '5px 14px',
+                background: nodes.length === 0 ? '#cbd5e1' : '#7c3aed',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 4,
+                cursor: nodes.length === 0 ? 'default' : 'pointer',
+                fontSize: 12,
+                fontWeight: 600,
+              }}
+            >
+              Export Input YAML
+            </button>
+            <button
               onClick={autoLayout}
               disabled={nodes.length === 0}
               style={{
@@ -228,30 +256,37 @@ export default function App() {
 
           {/* Tab bar */}
           <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid #e2e8f0' }}>
-            {(['yaml', 'validation'] as BottomTab[]).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setBottomTab(tab)}
-                style={{
-                  padding: '4px 16px',
-                  background: bottomTab === tab ? '#ffffff' : 'transparent',
-                  color: bottomTab === tab ? '#2563eb' : '#94a3b8',
-                  border: 'none',
-                  borderBottom: bottomTab === tab ? '2px solid #2563eb' : '2px solid transparent',
-                  cursor: 'pointer',
-                  fontSize: 12,
-                  fontWeight: 600,
-                  textTransform: 'capitalize',
-                }}
-              >
-                {tab === 'yaml' ? 'YAML Preview' : `Validation${validationErrors.length > 0 ? ` (${validationErrors.length})` : ''}`}
-              </button>
-            ))}
+            {(['yaml', 'input-yaml', 'validation'] as BottomTab[]).map((tab) => {
+              const label = tab === 'yaml'
+                ? 'YAML Preview'
+                : tab === 'input-yaml'
+                  ? 'Input YAML'
+                  : `Validation${validationErrors.length > 0 ? ` (${validationErrors.length})` : ''}`;
+              return (
+                <button
+                  key={tab}
+                  onClick={() => setBottomTab(tab)}
+                  style={{
+                    padding: '4px 16px',
+                    background: bottomTab === tab ? '#ffffff' : 'transparent',
+                    color: bottomTab === tab ? '#2563eb' : '#94a3b8',
+                    border: 'none',
+                    borderBottom: bottomTab === tab ? '2px solid #2563eb' : '2px solid transparent',
+                    cursor: 'pointer',
+                    fontSize: 12,
+                    fontWeight: 600,
+                  }}
+                >
+                  {label}
+                </button>
+              );
+            })}
           </div>
 
           {/* Tab content */}
           <div style={{ flex: 1, overflow: 'auto' }}>
             {bottomTab === 'yaml' && <YamlPreview />}
+            {bottomTab === 'input-yaml' && <InputYamlPreview />}
             {bottomTab === 'validation' && (
               <div style={{ padding: 12, fontSize: 12 }}>
                 {validationErrors.length === 0 ? (
