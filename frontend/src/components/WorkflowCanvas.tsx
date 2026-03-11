@@ -145,6 +145,7 @@ export function WorkflowCanvas() {
         edgeTypes={edgeTypes}
         fitView
         colorMode="light"
+        deleteKeyCode={["Delete", "Backspace"]}
         defaultEdgeOptions={{ animated: false }}
       >
         <Background gap={20} size={1} color="#e2e8f0" />
