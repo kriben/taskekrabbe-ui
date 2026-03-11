@@ -11,6 +11,7 @@ export interface TaskInfo {
   input_type_name: string;
   input_fields: FieldInfo[];
   fan_in_input: boolean;
+  is_workflow_task: boolean;
   output_type_name: string;
   output_fields: FieldInfo[];
   timeout_seconds: number | null;
@@ -21,6 +22,7 @@ export interface WorkflowNodeDef {
   instance_name: string | null;
   depends_on: string | string[] | Record<string, string | string[]> | null;
   config_fields: string[] | null;
+  is_workflow_task: boolean;
 }
 
 export interface WorkflowDef {

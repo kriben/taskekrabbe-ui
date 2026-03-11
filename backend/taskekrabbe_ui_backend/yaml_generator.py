@@ -11,7 +11,8 @@ def generate_yaml(workflow_def: WorkflowDef) -> str:
     """Build YamlWorkflowConfig-compatible YAML from a WorkflowDef."""
     tasks_section = []
     for node in workflow_def.tasks:
-        entry: dict[str, object] = {"task": node.task_import_path}
+        key = "workflow" if node.is_workflow_task else "task"
+        entry: dict[str, object] = {key: node.task_import_path}
         if node.instance_name:
             entry["name"] = node.instance_name
         if node.depends_on is not None:

@@ -321,6 +321,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
         instance_name: data.instanceName,
         depends_on,
         config_fields,
+        is_workflow_task: data.taskInfo.is_workflow_task,
       });
     }
 

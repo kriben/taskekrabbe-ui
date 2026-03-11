@@ -79,6 +79,7 @@ def _inspect_task(task_cls: type[Task[Any, Any]], module_name: str, attr_name: s
         input_type_name=_type_name(input_type),
         input_fields=_extract_fields(input_type),
         fan_in_input=_is_fan_in_input(input_type),
+        is_workflow_task=hasattr(task_cls, "_inner_workflow"),
         output_type_name=_type_name(output_type),
         output_fields=_extract_fields(output_type),
         timeout_seconds=task_cls.timeout_seconds,

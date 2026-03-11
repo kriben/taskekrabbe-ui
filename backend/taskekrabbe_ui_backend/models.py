@@ -20,6 +20,7 @@ class TaskInfo(BaseModel):
     input_type_name: str
     input_fields: list[FieldInfo]
     fan_in_input: bool = False
+    is_workflow_task: bool = False
     output_type_name: str
     output_fields: list[FieldInfo]
     timeout_seconds: float | None = None
@@ -32,6 +33,7 @@ class WorkflowNodeDef(BaseModel):
     instance_name: str | None = None
     depends_on: str | list[str] | dict[str, str | list[str]] | None = None
     config_fields: list[str] | None = None
+    is_workflow_task: bool = False
 
 
 class WorkflowDef(BaseModel):
