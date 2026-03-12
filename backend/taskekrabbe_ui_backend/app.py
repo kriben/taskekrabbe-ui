@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from taskekrabbe_ui_backend.models import ScanRequest, ScanResponse
-from taskekrabbe_ui_backend.routes import scan, tasks, workflows
+from taskekrabbe_ui_backend.routes import tasks, workflows
 from taskekrabbe_ui_backend.scanner import scan_directory
 
 app = FastAPI(title="Taskekrabbe UI Backend", version="0.1.0")
@@ -20,7 +20,6 @@ app.add_middleware(
 )
 
 # Mount routes
-app.include_router(scan.router, prefix="/api")
 app.include_router(tasks.router, prefix="/api")
 app.include_router(workflows.router, prefix="/api")
 
