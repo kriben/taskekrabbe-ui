@@ -1,6 +1,6 @@
 # Taskekrabbe UI — Workflow Configuration Editor
 
-Visual DAG editor for [taskekrabbe](../taskekrabbe) workflows. Browse tasks, view I/O schemas, and construct workflows via drag-and-drop — outputting valid `workflow.yaml` files.
+Visual DAG editor for [taskekrabbe](https://github.com/kriben/taskekrabbe) workflows. Browse tasks, view I/O schemas, and construct workflows via drag-and-drop — outputting valid `workflow.yaml` files.
 
 ## Quick Start
 
